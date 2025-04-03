@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon</title>
+</head>
+<body>
+
+    <form>
+        
+        <select name = "pokemon" id ="pokemon">
+            <option value = ""> Select a pokemon</option>    
+        </select>
+    </form>
+
+    <article id="pokemon"> </article>
+    <header>
+
+    </header>
+    <section>
+
+    </section>
+
+    <script>
+
+
+        async function fetchPokemon()
+ {
+        try{
+            
+            const url = "https://pokeapi.co/api/v2/pokemon?limit=10";
+            const res = await fetch(url);
+            const pokemon = await res.json();
+            console.log(pokemon.results)
+            displayPokemon(pokemon.results);
+            populate(pokemon)
+        } 
+        catch (error) 
+        {
+           console.log("Empty",error); 
+        }
+
+        function displayPokemon(pokemonList) {
+            
+            const pokemonContainer = document.getElementById("pokemon");
+            
+            pokemonList.forEach(pokemon => {
+                const pokemonName = document.createElement("p"); 
+                pokemonName.textContent = pokemon.name;  
+                pokemonContainer.appendChild(pokemonName);  
+            });
+        }
+
+            fetchPokemon();
+
+
+            dropDown.addEventListener("change",(event) =>{
+             const choice = event.target.value;
+             displayPokemon(choice);
+    });
+
+
+
+
+
+
+}
+   
+
+        
+    </script>
+</body>
+</html>
