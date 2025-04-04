@@ -3,72 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokemon</title>
+    <title>Pokémon Cards</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .card {
+            display: none;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 20px;
+            width: 200px;
+            text-align: center;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .card img {
+            width: 120px;
+            height: 120px;
+        }
+    </style>
 </head>
 <body>
-
-    <form>
-        
-        <select name = "pokemon" id ="pokemon">
-            <option value = ""> Select a pokemon</option>    
+ 
+    <h1>Pokémon Selector</h1>
+ 
+    <form id="pokemonForm">
+        <button type="button" onclick="fetchPokemonCards()">Load Pokémon</button>
+        <br><br>
+        <label for="pokemonSelect">Choose a Pokémon:</label>
+        <select id="pokemonSelect" disabled onchange="showPokemon()">
+            <option value="">Select a Pokémon</option>
         </select>
     </form>
-
-    <article id="pokemon"> </article>
-    <header>
-
-    </header>
-    <section>
-
-    </section>
-
+ 
+    <p id="error" style="color: red;"></p>
+ 
+    <div class="container">
+        <div id="pokemonCard" class="card">
+            <h3 id="pokemonName"></h3>
+            <img id="pokemonImage" src="" alt="">
+        </div>
+    </div>
+ 
     <script>
-
-
-        async function fetchPokemon()
- {
-        try{
-            
-            const url = "https://pokeapi.co/api/v2/pokemon?limit=10";
-            const res = await fetch(url);
-            const pokemon = await res.json();
-            console.log(pokemon.results)
-            displayPokemon(pokemon.results);
-            populate(pokemon)
-        } 
-        catch (error) 
-        {
-           console.log("Empty",error); 
+        let pokemonData = [];
+ 
+        async function fetchPokemonCards() {
+const url = "https://pokeapi.co/api/v2/pokemon?limit=10";
+            const selectMenu = document.getElementById("pokemonSelect");
+            const errorElement = document.getElementById("error");
+ 
+            selectMenu.innerHTML = '<option value="">Select a Pokémon</option>'; // Reset dropdown
+            errorElement.textContent = ""; // Clear previous errors
+ 
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Failed to fetch Pokémon list");
+                
+                const data = await response.json();
+ 
+                pokemonData = await Promise.all(
+                    data.results.map(async (pokemon) => {
+                        const res = await fetch(pokemon.url);
+if (!res.ok) throw new Error(`Failed to fetch details for ${pokemon.name}`);
+                        return await res.json();
+                    })
+                );
+ 
+                // Populate the dropdown menu
+                pokemonData.forEach(pokemon => {
+                    const option = document.createElement("option");
+option.value = pokemon.name;
+option.textContent = pokemon.name.toUpperCase();
+                    selectMenu.appendChild(option);
+                });
+ 
+                selectMenu.disabled = false; // Enable dropdown
+ 
+            } catch (error) {
+                errorElement.textContent = "Error: " + error.message;
+                console.error("Error fetching Pokémon data:", error);
+            }
         }
-
-        function displayPokemon(pokemonList) {
-            
-            const pokemonContainer = document.getElementById("pokemon");
-            
-            pokemonList.forEach(pokemon => {
-                const pokemonName = document.createElement("p"); 
-                pokemonName.textContent = pokemon.name;  
-                pokemonContainer.appendChild(pokemonName);  
-            });
+ 
+        function showPokemon() {
+            const selectedName = document.getElementById("pokemonSelect").value;
+            const card = document.getElementById("pokemonCard");
+            const nameElement = document.getElementById("pokemonName");
+            const imageElement = document.getElementById("pokemonImage");
+ 
+            if (!selectedName) {
+card.style.display = "none";
+                return;
+            }
+ 
+const selectedPokemon = pokemonData.find(pokemon => pokemon.name === selectedName);
+            if (selectedPokemon) {
+nameElement.textContent = selectedPokemon.name.toUpperCase();
+                imageElement.src = selectedPokemon.sprites.front_default;
+imageElement.alt = selectedPokemon.name;
+card.style.display = "block";
+            }
         }
-
-            fetchPokemon();
-
-
-            dropDown.addEventListener("change",(event) =>{
-             const choice = event.target.value;
-             displayPokemon(choice);
-    });
-
-
-
-
-
-
-}
-   
-
-        
     </script>
+ 
 </body>
 </html>
